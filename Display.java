@@ -13,7 +13,7 @@ import javax.swing.JPanel;
  * Class to display the board and facilitate user interaction with the board
  */
 public class Display extends JPanel implements MouseListener, MouseMotionListener, MouseWheelListener {
-  public static final int MOVE_MODE = 0;
+  public static final int VIEW_MODE = 0;
   private int mode = 0; // the mode that the display is in
 
   private int width;
@@ -124,7 +124,15 @@ public class Display extends JPanel implements MouseListener, MouseMotionListene
 
     int change = e.getWheelRotation();
 
-    int newScale = scale - change;
+    int newScale;
+    // zooming in
+    if (change < 0) {
+      newScale = (int)(scale * 1.2) + 1;
+    }
+    // zooming out
+    else {
+      newScale = (int)(scale / 1.2);
+    }
 
     // not allowed to have a scale less than 4
     if (newScale >= 4) {
