@@ -1,20 +1,25 @@
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import javax.swing.JSplitPane;
+
+import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 
 /**
  * The frame in which the program is shown
  */
-public class MainFrame extends JFrame {
+public class MainFrame extends JFrame implements ActionListener {
   private Board board;
   private int width;
   private int height;
@@ -43,27 +48,58 @@ public class MainFrame extends JFrame {
     splitPane.setEnabled(false);
 
     // menu bar to hold buttons
-    JMenuBar menuBar = new JMenuBar();
-    splitPane.setLeftComponent(menuBar);
+    JPanel menu = new JPanel();
+    menu.setLayout(new BoxLayout(menu, BoxLayout.Y_AXIS));
+    splitPane.setLeftComponent(menu);
 
     // creates the view mode button
     JButton view = new JButton();
     view.setSize(splitPane.getDividerLocation(), splitPane.getDividerLocation());
     view.setToolTipText("View Mode");
     view.setBorder(BorderFactory.createEmptyBorder());
-    menuBar.add(view);
+    view.setActionCommand("VIEW");
+    view.addActionListener(this);
+    menu.add(view);
+
+    // creates the layout mode button
+    JButton layout = new JButton();
+    layout.setSize(splitPane.getDividerLocation(), splitPane.getDividerLocation());
+    layout.setToolTipText("Layout Mode");
+    layout.setBorder(BorderFactory.createEmptyBorder());
+    layout.setActionCommand("LAYOUT");
+    layout.addActionListener(this);
+    menu.add(layout);
 
     // makes the scaled icons for the buttons
     try {
+      // view button
       Image viewIcon = ImageIO.read(new File("icons/view.png"));
       Image scaledViewIcon = viewIcon.getScaledInstance(splitPane.getDividerLocation(), splitPane.getDividerLocation(), Image.SCALE_SMOOTH);
       view.setIcon(new ImageIcon(scaledViewIcon));
+
+      // layout button
+      Image layoutIcon = ImageIO.read(new File("icons/layout.png"));
+      Image scaledLayoutIcon = layoutIcon.getScaledInstance(splitPane.getDividerLocation(), splitPane.getDividerLocation(), Image.SCALE_SMOOTH);
+      layout.setIcon(new ImageIcon(scaledLayoutIcon));
     } catch (IOException e) {}
 
     // display
-    display = new Display(width, height, scale, board.getColorArray());
+    display = new Display(board, scale);
     splitPane.setRightComponent(display);
 
     setVisible(true);
+  }
+
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    String command = e.getActionCommand();
+
+    // does action based on button command
+    if (command.equals("VIEW")) {
+      display.viewMode();
+    }
+    if (command.equals("LAYOUT")) {
+      display.layoutMode(Tile.WALL);
+    }
   }
 }

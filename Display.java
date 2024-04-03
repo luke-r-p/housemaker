@@ -14,8 +14,10 @@ import javax.swing.JPanel;
  */
 public class Display extends JPanel implements MouseListener, MouseMotionListener, MouseWheelListener {
   public static final int VIEW_MODE = 0;
+  public static final int LAYOUT_MODE = 1;
   private int mode = 0; // the mode that the display is in
 
+  private Board board;
   private int width;
   private int height;
   private int scale;
@@ -24,6 +26,8 @@ public class Display extends JPanel implements MouseListener, MouseMotionListene
 
   private int[] mouseStart = new int[2]; // previous position of mouse for moving
 
+  private int tileType = Tile.EMPTY;
+
   /**
    * Constructor for the display
    * @param width width of the board in tiles
@@ -31,11 +35,12 @@ public class Display extends JPanel implements MouseListener, MouseMotionListene
    * @param scale initial scale of the board (e.g. 8 means 8 pixels per tile)
    * @param colorArray initial array of colors to display
    */
-  public Display(int width, int height, int scale, Color[][] colorArray) {
-    this.width = width;
-    this.height = height;
+  public Display(Board board, int scale) {
+    this.board = board;
+    this.width = board.getWidth();
+    this.height = board.getHeight();
     this.scale = scale;
-    this.colorArray = colorArray;
+    this.colorArray = board.getColorArray();
 
     this.addMouseListener(this);
     this.addMouseMotionListener(this);
@@ -52,11 +57,19 @@ public class Display extends JPanel implements MouseListener, MouseMotionListene
   }
 
   /**
-   * Changes the interaction mode to the given mode
-   * @param mode mode to change to (use Display.****_MODE)
+   * Changes the interaction mode to the view mode
    */
-  public void setMode(int mode) {
-    this.mode = mode;
+  public void viewMode() {
+    mode = VIEW_MODE;
+  }
+
+  /**
+   * Changes the interaction mode to layout mode with the specified tile type
+   * @param tileType Tile.***** integer to represent the type of tile to paint
+   */
+  public void layoutMode(int tileType) {
+    mode = LAYOUT_MODE;
+    this.tileType = tileType;
   }
 
   @Override
@@ -76,14 +89,44 @@ public class Display extends JPanel implements MouseListener, MouseMotionListene
     }
   }
 
+  /**
+   * Gets the tile index based on the location on the display specified
+   * @param x the x-position on the screen
+   * @param y the y-position on the screen
+   * @return the position [xPos, yPos] of the tile in the array
+   */
+  public int[] getTilePosition(int x, int y) {
+    int[] position = {0, 0};
+
+    position[0] = (x - corner[0]) / scale;
+    position[1] = (y - corner[1]) / scale;
+
+    if (position[0] < 0 || position[0] >= width || position[1] < 0 || position[1] >= height) {
+      position[0] = -1;
+      position[1] = -1;
+    }
+
+    return position;
+  }
+
   @Override
   public void mouseClicked(MouseEvent e) {
   }
 
   @Override
   public void mousePressed(MouseEvent e) {
-    mouseStart[0] = e.getX();
-    mouseStart[1] = e.getY();
+    switch (mode) {
+      case VIEW_MODE:
+        mouseStart[0] = e.getX();
+        mouseStart[1] = e.getY();
+        break;
+      case LAYOUT_MODE:
+        int[] position = getTilePosition(e.getX(), e.getY());
+        if (position[0] > -1) {
+          updateColors(board.updateTile(position[0], position[1], tileType));
+        }
+        break;
+    }
   }
 
   @Override
@@ -100,18 +143,28 @@ public class Display extends JPanel implements MouseListener, MouseMotionListene
 
   @Override
   public void mouseDragged(MouseEvent e) {
-    // moves the top-left corner of the displayed board to follow the dragged mouse
+    switch (mode) {
+      case VIEW_MODE:
+        // moves the top-left corner of the displayed board to follow the dragged mouse
 
-    int xDifference = e.getX() - mouseStart[0];
-    int yDifference = e.getY() - mouseStart[1];
+        int xDifference = e.getX() - mouseStart[0];
+        int yDifference = e.getY() - mouseStart[1];
 
-    corner[0] = corner[0] + xDifference;
-    corner[1] = corner[1] + yDifference;
+        corner[0] = corner[0] + xDifference;
+        corner[1] = corner[1] + yDifference;
 
-    mouseStart[0] = e.getX();
-    mouseStart[1] = e.getY();
+        mouseStart[0] = e.getX();
+        mouseStart[1] = e.getY();
 
-    repaint();
+        repaint();
+        break;
+      case LAYOUT_MODE:
+        int[] position = getTilePosition(e.getX(), e.getY());
+        if (position[0] > -1) {
+          updateColors(board.updateTile(position[0], position[1], tileType));
+        }
+        break;
+    }
   }
 
   @Override

@@ -28,6 +28,19 @@ public class Board {
   }
 
   /**
+   * Updates the type of the specified tile
+   * @param x the x index of the tile
+   * @param y the y index of the tile
+   * @param type the type to make the tile
+   * @return the new color array of all tiles
+   */
+  public Color[][] updateTile(int x, int y, int type) {
+    tiles[x][y].setType(type);
+    
+    return getColorArray();
+  }
+
+  /**
    * Gets a 2d array of all colors of the tiles
    * @return 2d array of tile colors
    */
@@ -41,5 +54,13 @@ public class Board {
     }
 
     return colorArray;
+  }
+
+  public int getWidth() {
+    return width;
+  }
+
+  public int getHeight() {
+    return height;
   }
 }
