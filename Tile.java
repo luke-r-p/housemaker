@@ -1,4 +1,3 @@
-
 import java.awt.Color;
 
 /**
@@ -8,9 +7,11 @@ public class Tile {
   // int types
   public static final int EMPTY = 0;
   public static final int WALL = 1;
+  public static final int DOOR = 2;
+  public static final int WINDOW = 3;
   
   // array of colors relating to tile types
-  public static final Color[] colors = {Color.lightGray, Color.darkGray};
+  public static final Color[] colors = {Color.white, Color.darkGray, Color.lightGray, Color.cyan};
 
   // type of this tile
   private int type;

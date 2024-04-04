@@ -1,11 +1,9 @@
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
-import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 
 import java.awt.GridLayout;
@@ -31,14 +29,14 @@ public class MainFrame extends JFrame implements ActionListener {
    * Constructor for the MainFrame
    */
   public MainFrame() {
-    setSize(500, 400);
+    setSize((int)(Toolkit.getDefaultToolkit().getScreenSize().getWidth()), (int)(Toolkit.getDefaultToolkit().getScreenSize().getWidth()));
     setDefaultCloseOperation(EXIT_ON_CLOSE);
     setTitle("House Maker");
     setExtendedState(MAXIMIZED_BOTH);
 
     width = 100;
     height = 80;
-    scale = 8;
+    scale = 10;
     board = new Board(width, height);
 
     // splitpane to hold display and menu bar
@@ -48,13 +46,11 @@ public class MainFrame extends JFrame implements ActionListener {
     splitPane.setEnabled(false);
 
     // menu bar to hold buttons
-    JPanel menu = new JPanel();
-    menu.setLayout(new BoxLayout(menu, BoxLayout.Y_AXIS));
+    JMenuBar menu = new JMenuBar();
     splitPane.setLeftComponent(menu);
 
     // creates the view mode button
     JButton view = new JButton();
-    view.setSize(splitPane.getDividerLocation(), splitPane.getDividerLocation());
     view.setToolTipText("View Mode");
     view.setBorder(BorderFactory.createEmptyBorder());
     view.setActionCommand("VIEW");
@@ -62,12 +58,7 @@ public class MainFrame extends JFrame implements ActionListener {
     menu.add(view);
 
     // creates the layout mode button
-    JButton layout = new JButton();
-    layout.setSize(splitPane.getDividerLocation(), splitPane.getDividerLocation());
-    layout.setToolTipText("Layout Mode");
-    layout.setBorder(BorderFactory.createEmptyBorder());
-    layout.setActionCommand("LAYOUT");
-    layout.addActionListener(this);
+    LayoutButton layout = new LayoutButton(this);
     menu.add(layout);
 
     // makes the scaled icons for the buttons
@@ -81,25 +72,29 @@ public class MainFrame extends JFrame implements ActionListener {
       Image layoutIcon = ImageIO.read(new File("icons/layout.png"));
       Image scaledLayoutIcon = layoutIcon.getScaledInstance(splitPane.getDividerLocation(), splitPane.getDividerLocation(), Image.SCALE_SMOOTH);
       layout.setIcon(new ImageIcon(scaledLayoutIcon));
-    } catch (IOException e) {}
+    } catch (IOException e) { System.out.println(e); }
 
     // display
     display = new Display(board, scale);
     splitPane.setRightComponent(display);
 
     setVisible(true);
+
+    menu.setLayout(new GridLayout(splitPane.getHeight() / splitPane.getDividerLocation() - 1, 1));
   }
 
   @Override
   public void actionPerformed(ActionEvent e) {
     String command = e.getActionCommand();
+    // splits the command into parts
+    String[] parts = command.split(" ");
 
     // does action based on button command
-    if (command.equals("VIEW")) {
+    if (parts[0].equals("VIEW")) {
       display.viewMode();
     }
-    if (command.equals("LAYOUT")) {
-      display.layoutMode(Tile.WALL);
+    else if (parts[0].equals("LAYOUT")) {
+      display.layoutMode(Integer.parseInt(parts[1]));
     }
   }
 }
