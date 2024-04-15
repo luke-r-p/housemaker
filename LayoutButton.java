@@ -1,4 +1,3 @@
-import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.BorderFactory;
 import javax.swing.JMenu;

@@ -1,4 +1,6 @@
 import java.awt.Color;
+import java.awt.image.BufferedImage;
+import java.util.LinkedList;
 
 /**
  * Class for the board of tiles
@@ -8,6 +10,8 @@ public class Board {
   int height;
 
   Tile[][] tiles;
+
+  LinkedList<Item> items = new LinkedList<Item>();
 
   /**
    * Constructor for the board
@@ -56,10 +60,76 @@ public class Board {
     return colorArray;
   }
 
+  /**
+   * Gets array of images relating to all items on the board
+   * @return array of images
+   */
+  public BufferedImage[] getItemImages() {
+    BufferedImage[] images = new BufferedImage[items.size()];
+
+    for (int i = 0; i < items.size(); i++) {
+      images[i] = items.get(i).getImage();
+    }
+
+    return images;
+  }
+
+  /**
+   * Gets 2d array of positions of all items
+   * @return array of positions [[x,y], [x,y], ...]
+   */
+  public int[][] getItemPositions() {
+    int[][] positions = new int[items.size()][2];
+
+    for (int i = 0; i < items.size(); i++) {
+      positions[i] = items.get(i).getPosition();
+    }
+
+    return positions;
+  }
+
+  /**
+   * Gets 2d array of sizes of all items
+   * @return array of sizes [[width,height], [width,height], ...]
+   */
+  public int[][] getItemSizes() {
+    int[][] sizes = new int[items.size()][2];
+
+    for (int i = 0; i < items.size(); i++) {
+      sizes[i] = items.get(i).getSize();
+    }
+
+    return sizes;
+  }
+
+  /**
+   * Gets the number of items on the board
+   * @return number of items
+   */
+  public int getItemCount() {
+    return items.size();
+  }
+
+  /**
+   * Adds the given item to the board
+   * @param item item to be added
+   */
+  public void addItem(Item item) {
+    items.add(item);
+  }
+
+  /**
+   * Gets the width of the board
+   * @return width of the board (in tiles)
+   */
   public int getWidth() {
     return width;
   }
 
+  /**
+   * Gets the height of the board
+   * @return height of the board (in tiles)
+   */
   public int getHeight() {
     return height;
   }

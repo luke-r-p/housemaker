@@ -1,11 +1,17 @@
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenuBar;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 
+import java.awt.Cursor;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Toolkit;
@@ -61,6 +67,14 @@ public class MainFrame extends JFrame implements ActionListener {
     LayoutButton layout = new LayoutButton(this);
     menu.add(layout);
 
+    // creates the view mode button
+    JButton add = new JButton();
+    add.setToolTipText("Add Mode");
+    add.setBorder(BorderFactory.createEmptyBorder());
+    add.setActionCommand("ADD");
+    add.addActionListener(this);
+    menu.add(add);
+
     // makes the scaled icons for the buttons
     try {
       // view button
@@ -72,6 +86,11 @@ public class MainFrame extends JFrame implements ActionListener {
       Image layoutIcon = ImageIO.read(new File("icons/layout.png"));
       Image scaledLayoutIcon = layoutIcon.getScaledInstance(splitPane.getDividerLocation(), splitPane.getDividerLocation(), Image.SCALE_SMOOTH);
       layout.setIcon(new ImageIcon(scaledLayoutIcon));
+
+      // add button
+      Image addIcon = ImageIO.read(new File("icons/add.png"));
+      Image scaledAddIcon = addIcon.getScaledInstance(splitPane.getDividerLocation(), splitPane.getDividerLocation(), Image.SCALE_SMOOTH);
+      add.setIcon(new ImageIcon(scaledAddIcon));
     } catch (IOException e) { System.out.println(e); }
 
     // display
@@ -92,9 +111,32 @@ public class MainFrame extends JFrame implements ActionListener {
     // does action based on button command
     if (parts[0].equals("VIEW")) {
       display.viewMode();
+      setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
     else if (parts[0].equals("LAYOUT")) {
       display.layoutMode(Integer.parseInt(parts[1]));
+      setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+    }
+    else if (parts[0].equals("ADD")) {
+      // creates panel to select item
+      JPanel popupPanel = new JPanel();
+      popupPanel.add(new JLabel("Select item to add:"));
+      DefaultComboBoxModel<String> model = new DefaultComboBoxModel<String>();
+      for (String name : ItemGuide.itemNames) {
+        model.addElement(name);
+      }
+      JComboBox<String> comboBox = new JComboBox<String>(model);
+      popupPanel.add(comboBox);
+
+      // gets user input from popup box
+      int selected = JOptionPane.showConfirmDialog(null, popupPanel, "Item selection", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+
+      // activates add mode with the selected item
+      if (selected == JOptionPane.OK_OPTION) {
+        display.addMode(ItemGuide.makeItem(comboBox.getSelectedIndex()));
+      }
+
+      setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
     }
   }
 }

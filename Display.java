@@ -1,11 +1,14 @@
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.awt.image.BufferedImage;
 
 import javax.swing.JPanel;
 
@@ -15,6 +18,10 @@ import javax.swing.JPanel;
 public class Display extends JPanel implements MouseListener, MouseMotionListener, MouseWheelListener {
   public static final int VIEW_MODE = 0;
   public static final int LAYOUT_MODE = 1;
+  public static final int ADD_MODE = 2;
+  public static final int MOVE_MODE = 3;
+  public static final int ROTATE_MODE = 4;
+  public static final int DELETE_MODE = 5;
   private int mode = 0; // the mode that the display is in
 
   private Board board;
@@ -24,9 +31,15 @@ public class Display extends JPanel implements MouseListener, MouseMotionListene
   private int[] corner = {0, 0}; // top left corner of the board in the display
   private Color[][] colorArray; // array of colors to display
 
+  private int itemCount; // number of items on the board
+  private BufferedImage[] itemImages; // list of images for the items on the board
+  private int[][] itemPositions; // list of positions for the items on the board
+  private int[][] itemSizes; // list of sizes for the items on the board
+
   private int[] mouseStart = new int[2]; // previous position of mouse for moving
 
   private int tileType = Tile.EMPTY;
+  private Item item;
 
   /**
    * Constructor for the display
@@ -57,10 +70,22 @@ public class Display extends JPanel implements MouseListener, MouseMotionListene
   }
 
   /**
+   * Updates the information on all items from the board
+   */
+  public void updateItems() {
+    itemCount = board.getItemCount();
+    itemImages = board.getItemImages();
+    itemPositions = board.getItemPositions();
+    itemSizes = board.getItemSizes();
+    repaint();
+  }
+
+  /**
    * Changes the interaction mode to the view mode
    */
   public void viewMode() {
     mode = VIEW_MODE;
+    this.getParent().getParent().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }
 
   /**
@@ -70,6 +95,15 @@ public class Display extends JPanel implements MouseListener, MouseMotionListene
   public void layoutMode(int tileType) {
     mode = LAYOUT_MODE;
     this.tileType = tileType;
+  }
+
+  /**
+   * Changes the interaction mode to add mode with the specified item
+   * @param item the item to add to the board
+   */
+  public void addMode(Item item) {
+    this.item = item;
+    mode = ADD_MODE;
   }
 
   @Override
@@ -86,6 +120,12 @@ public class Display extends JPanel implements MouseListener, MouseMotionListene
         g2.setColor(colorArray[w][h]);
         g2.fillRect(corner[0] + w * scale, corner[1] + h * scale, scale, scale);
       }
+    }
+
+    // paints the items onto the panel
+    for (int i = 0; i < itemCount; i++) {
+      Image scaledImage = itemImages[i].getScaledInstance(itemSizes[i][0] * scale, itemSizes[i][1] * scale, BufferedImage.SCALE_FAST);
+      g2.drawImage(scaledImage, corner[0] + itemPositions[i][0] * scale, corner[1] + itemPositions[i][1] * scale, null);
     }
   }
 
@@ -115,17 +155,27 @@ public class Display extends JPanel implements MouseListener, MouseMotionListene
 
   @Override
   public void mousePressed(MouseEvent e) {
+    int[] position;
+
     switch (mode) {
       case VIEW_MODE:
         mouseStart[0] = e.getX();
         mouseStart[1] = e.getY();
         break;
       case LAYOUT_MODE:
-        int[] position = getTilePosition(e.getX(), e.getY());
+        position = getTilePosition(e.getX(), e.getY());
         if (position[0] > -1) {
           updateColors(board.updateTile(position[0], position[1], tileType));
         }
         break;
+      case ADD_MODE:
+        position = getTilePosition(e.getX(), e.getY());
+        if (position[0] > -1) {
+          item.setPosition(position[0], position[1]);
+          board.addItem(item);
+          updateItems();
+          this.viewMode();
+        }
     }
   }
 
