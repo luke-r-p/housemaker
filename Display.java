@@ -85,6 +85,7 @@ public class Display extends JPanel implements MouseListener, MouseMotionListene
    */
   public void viewMode() {
     mode = VIEW_MODE;
+    this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     this.getParent().getParent().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
   }
 
@@ -95,6 +96,8 @@ public class Display extends JPanel implements MouseListener, MouseMotionListene
   public void layoutMode(int tileType) {
     mode = LAYOUT_MODE;
     this.tileType = tileType;
+    this.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+    this.getParent().getParent().setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
   }
 
   /**
@@ -104,6 +107,17 @@ public class Display extends JPanel implements MouseListener, MouseMotionListene
   public void addMode(Item item) {
     this.item = item;
     mode = ADD_MODE;
+    this.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+    this.getParent().getParent().setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+  }
+
+  /**
+   * Changes the interaction mode to delete mode
+   */
+  public void deleteMode() {
+    mode = DELETE_MODE;
+    this.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+    this.getParent().getParent().setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
   }
 
   @Override
@@ -149,6 +163,26 @@ public class Display extends JPanel implements MouseListener, MouseMotionListene
     return position;
   }
 
+  /**
+   * Gets the index of the first item in the given location
+   * @param position [x,y] of the tile to check
+   * @return the index of the item in the item lists
+   */
+  public int getItemIndex(int[] position) {
+    // checks all items
+    for (int i = 0; i < itemCount; i++) {
+      // checks correct x
+      if (itemPositions[i][0] <= position[0] && itemPositions[i][0] + itemSizes[i][0] > position[0]) {
+        // checks correct y
+        if (itemPositions[i][1] <= position[1] && itemPositions[i][1] + itemSizes[i][1] > position[1]) {
+          return i;
+        }
+      }
+    }
+
+    return -1;
+  }
+
   @Override
   public void mouseClicked(MouseEvent e) {
   }
@@ -176,6 +210,12 @@ public class Display extends JPanel implements MouseListener, MouseMotionListene
           updateItems();
           this.viewMode();
         }
+        break;
+      case DELETE_MODE:
+        position = getTilePosition(e.getX(), e.getY());
+        board.deleteIndex(getItemIndex(position));
+        updateItems();
+        break;
     }
   }
 

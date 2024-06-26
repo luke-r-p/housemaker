@@ -119,6 +119,14 @@ public class Board {
   }
 
   /**
+   * Deleted the item at the given index
+   * @param index index of item to be deleted
+   */
+  public void deleteIndex(int index) {
+    items.remove(index);
+  }
+
+  /**
    * Gets the width of the board
    * @return width of the board (in tiles)
    */
